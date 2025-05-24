@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.media.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="multimedia.PlayerController" prefWidth="900" prefHeight="600">
+
+    <left>
+        <VBox spacing="10" prefWidth="220" style="-fx-background-color: #222222;">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Playlist" style="-fx-text-fill: #ff9800; -fx-font-size: 18px; -fx-font-weight: bold;" />
+            <ListView fx:id="playlistView" VBox.vgrow="ALWAYS" />
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Open Files" onAction="#openFiles" maxWidth="Infinity" />
+                <Button text="Hapus" onAction="#removeSelected" maxWidth="Infinity" />
+            </HBox>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane style="-fx-background-color: black;">
+            <MediaView fx:id="mediaView" fitWidth="800" fitHeight="450" preserveRatio="true" />
+        </StackPane>
+    </center>
+
+    <bottom>
+        <VBox spacing="5">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Slider fx:id="seekSlider" maxWidth="Infinity" />
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="⏮" onAction="#prev" />
+                <Button fx:id="playPauseBtn" text="▶" onAction="#playPause" />
+                <Button text="⏭" onAction="#next" />
+                <Button text="«10s" onAction="#seekBack" />
+                <Button text="10s»" onAction="#seekForward" />
+                <Label fx:id="timeLabel" text="00:00 / 00:00" style="-fx-text-fill: white;" />
+                <Slider fx:id="volumeSlider" prefWidth="150" />
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

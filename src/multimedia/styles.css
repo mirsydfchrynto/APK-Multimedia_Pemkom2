@@ -1,0 +1,36 @@
+.root {
+    -fx-background-color: #121212;
+    -fx-font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    -fx-text-fill: #eeeeee;
+}
+
+.label {
+    -fx-text-fill: #ff9800;
+    -fx-font-weight: bold;
+}
+
+.list-view {
+    -fx-background-color: #222222;
+    -fx-control-inner-background: #222222;
+    -fx-cell-hover-color: #333333;
+    -fx-selection-bar: #ff9800;
+    -fx-selection-bar-non-focused: #ffb74d;
+}
+
+.button {
+    -fx-background-color: #ff9800;
+    -fx-text-fill: #121212;
+    -fx-font-weight: bold;
+}
+
+.button:hover {
+    -fx-background-color: #ffb74d;
+}
+
+.slider .thumb {
+    -fx-background-color: #ff9800;
+}
+
+.slider .track {
+    -fx-background-color: #444444;
+}
