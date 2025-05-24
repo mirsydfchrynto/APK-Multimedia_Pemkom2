@@ -48,14 +48,6 @@ public class PlayerController {
     public void initialize() {
         playlistView.setItems(playlist);
 
-        // Initialize currentTimeListener once
-        currentTimeListener = (obs, oldTime, newTime) -> {
-            if (player != null && !seekSlider.isValueChanging()) {
-                seekSlider.setValue(newTime.toSeconds());
-                timeLabel.setText(formatTime(newTime, player.getMedia().getDuration()));
-            }
-        };
-
         volumeSlider.setValue(50);
         volumeSlider.valueProperty().addListener((obs, oldV, newV) -> {
             if (player != null) {
@@ -84,34 +76,32 @@ public class PlayerController {
     private void removeSelected(ActionEvent ignored) {
         int selected = playlistView.getSelectionModel().getSelectedIndex();
         if (selected >= 0) {
-            // Kalau lagu yang dihapus adalah yang sedang diputar
+            // Stop and dispose player if currently playing the removed song
             if (selected == index && player != null) {
-                player.currentTimeProperty().removeListener(currentTimeListener);
                 player.stop();
+                player.currentTimeProperty().removeListener(currentTimeListener);
                 player.dispose();
                 player = null;
+                playPauseBtn.setText("▶");
+                timeLabel.setText("00:00 / 00:00");
+                seekSlider.setValue(0);
+            }
 
-                playlist.remove(selected);
-                sources.remove(selected);
+            playlist.remove(selected);
+            sources.remove(selected);
 
-                if (!sources.isEmpty()) {
-                    if (selected >= sources.size()) {
-                        selected = sources.size() - 1;
-                    }
-                    play(selected);
-                } else {
-                    index = -1;
-                    playPauseBtn.setText("▶");
-                    timeLabel.setText("00:00 / 00:00");
-                    seekSlider.setValue(0);
-                }
+            if (sources.isEmpty()) {
+                index = -1;
             } else {
-                // Jika yang dihapus bukan lagu yang sedang diputar
-                playlist.remove(selected);
-                sources.remove(selected);
-
                 if (selected < index) {
                     index--;
+                } else if (selected == index) {
+                    // Play next or previous if possible after removal
+                    int nextIndex = index;
+                    if (nextIndex >= sources.size()) {
+                        nextIndex = sources.size() - 1;
+                    }
+                    play(nextIndex);
                 }
             }
         }
@@ -171,10 +161,9 @@ public class PlayerController {
         }
 
         if (player != null) {
-            player.currentTimeProperty().removeListener(currentTimeListener);
             player.stop();
+            player.currentTimeProperty().removeListener(currentTimeListener);
             player.dispose();
-            player = null;
         }
 
         player = new MediaPlayer(new Media(sources.get(idx)));
@@ -182,6 +171,12 @@ public class PlayerController {
         index = idx;
         playlistView.getSelectionModel().select(idx);
 
+        currentTimeListener = (obs, oldTime, newTime) -> {
+            if (!seekSlider.isValueChanging()) {
+                seekSlider.setValue(newTime.toSeconds());
+            }
+            timeLabel.setText(formatTime(newTime, player.getMedia().getDuration()));
+        };
         player.currentTimeProperty().addListener(currentTimeListener);
 
         player.setOnReady(() -> {
@@ -217,19 +212,27 @@ public class PlayerController {
 
     private void seekRelative(Duration d) {
         if (player != null) {
-            Duration newTime = player.getCurrentTime().add(d);
-            if (newTime.lessThan(Duration.ZERO)) {
-                newTime = Duration.ZERO;
-            } else if (newTime.greaterThan(player.getMedia().getDuration())) {
-                newTime = player.getMedia().getDuration();
+            Duration current = player.getCurrentTime();
+            Duration total = player.getMedia().getDuration();
+            Duration seekTo = current.add(d);
+            if (seekTo.lessThan(Duration.ZERO)) {
+                seekTo = Duration.ZERO;
+            } else if (seekTo.greaterThan(total)) {
+                seekTo = total;
             }
-            player.seek(newTime);
+            player.seek(seekTo);
         }
     }
 
     private String formatTime(Duration current, Duration total) {
-        int cur = (int) Math.floor(current.toSeconds());
-        int tot = (int) Math.floor(total.toSeconds());
-        return String.format("%02d:%02d / %02d:%02d", cur / 60, cur % 60, tot / 60, tot % 60);
+        int currentSeconds = (int) Math.floor(current.toSeconds());
+        int totalSeconds = (int) Math.floor(total.toSeconds());
+
+        int currentMinutes = currentSeconds / 60;
+        int currentRemainSeconds = currentSeconds % 60;
+        int totalMinutes = totalSeconds / 60;
+        int totalRemainSeconds = totalSeconds % 60;
+
+        return String.format("%02d:%02d / %02d:%02d", currentMinutes, currentRemainSeconds, totalMinutes, totalRemainSeconds);
     }
 }
